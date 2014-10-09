@@ -36,7 +36,8 @@
  *
  * @param {string} url A parametrized URL template with parameters prefixed by `:` as in
  *   `/user/:username`. If you are using a URL with a port number (e.g.
- *   `http://example.com:8080/api`), it will be respected.
+ *   `http://example.com:8080/api`), you'll need to escape the colon character before the port
+ *   number, like this: `djResource('http://example.com\\:8080/api')`.
  *
  * @param {Object=} paramDefaults Default values for `url` parameters. These can be overridden in
  *   `actions` methods. If any of the parameter value is a function, it will be executed every time
@@ -214,7 +215,7 @@ angular.module('djangoRESTResources', ['ng']).
 
         var urlParams = self.urlParams = {};
         forEach(url.split(/\W/), function(param){
-          if (!(new RegExp("^\\d+$").test(param)) && param && (new RegExp("(^|[^\\\\]):" + param + "(\\W|$)").test(url))) {
+          if (param && (new RegExp("(^|[^\\\\]):" + param + "(\\W|$)").test(url))) {
               urlParams[param] = true;
           }
         });
@@ -373,7 +374,31 @@ angular.module('djangoRESTResources', ['ng']).
                       (success||noop)(value, response.headers);
                     }
                   };
-                  paginator(data);
+
+                  var queryParser = function getJsonFromUrl(url){
+                    var query = url.match(/(\?.*)/)[1].substr(1);
+                    var result = {};
+                    query.split("&").forEach(function(part) {
+                      var item = part.split("=");
+                      result[item[0]] = decodeURIComponent(item[1]);
+                    });
+                    return result;
+                  }
+
+                  var anthonyPaginator = function anthonyPaginator(data){
+
+                    forEach(data.results, function(item) {
+                      value.push(new DjangoRESTResource(item));
+                    });
+
+                    if(data.next != null)
+                      value.next = queryParser(data.next).page;
+                    if(data.previous != null)
+                      value.previous = queryParser(data.previous).page;
+                  }
+                  //paginator(data);
+
+                  anthonyPaginator(data);
                 } else {
                   //Not paginated, push into array as normal.
                   forEach(data, function(item) {
