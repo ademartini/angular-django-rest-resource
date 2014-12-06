@@ -1,7 +1,7 @@
 {
   "name": "angular-django-rest-resource",
   "main": "angular-django-rest-resource.js",
-  "version": "1.0.2-AnthonyHack",
+  "version": "1.0.2-NoRecursiveFix",
   "homepage": "https://github.com/blacklocus/angular-django-rest-resource",
   "authors": [
     "BlackLocus",
